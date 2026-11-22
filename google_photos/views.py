@@ -8,4 +8,4 @@ def index(request):
     return HttpResponse("Hello, world. You're at the google photos app index.")
 # Create your views here.
 def photo(request):
-    return render(request, 'photos/photo.html')
+    return render(request, 'photos/img.html')
