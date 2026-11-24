@@ -1,101 +1,856 @@
-{% load static %}
-{% load static %}
-
+{%load static %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Google Photos</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Google Photos</title>
+  <style>
+    :root {
+      --bg-page: #ffffff;
+      --bg-sidebar: #ffffff;
+      --bg-surface: #f0f4f9;
+      --bg-surface-hover: #e3e8ef;
+      --bg-active-nav: #c2e7ff;
+      --text-primary: #1f1f1f;
+      --text-secondary: #444746;
+      --accent-blue: #0b57d0;
+      --border-subtle: #e0e2e0;
+      --radius-pill: 9999px;
+      --radius-card: 12px;
+      --sidebar-width: 248px;
+      --header-height: 64px;
+    }
 
-    <link rel="stylesheet" href="{% static 'css/photo.css' %}">
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: "Google Sans", Roboto, -apple-system, BlinkMacSystemFont, Arial, sans-serif;
+    }
+
+    body {
+      background: var(--bg-page);
+      color: var(--text-primary);
+      min-height: 100vh;
+    }
+
+    /* Top App Bar */
+    .topbar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: var(--header-height);
+      background: var(--bg-page);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 8px 16px;
+      z-index: 40;
+      gap: 16px;
+    }
+
+    .topbar-left {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      min-width: var(--sidebar-width);
+    }
+
+    .menu-toggle-label {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      cursor: pointer;
+      color: var(--text-secondary);
+      transition: background 0.15s;
+    }
+
+    .menu-toggle-label:hover {
+      background: var(--bg-surface);
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      text-decoration: none;
+      color: var(--text-secondary);
+      font-size: 21px;
+      font-weight: 400;
+      letter-spacing: -0.2px;
+    }
+
+    .brand svg {
+      width: 28px;
+      height: 28px;
+      flex-shrink: 0;
+    }
+
+    /* Search Pill */
+    .search-box {
+      flex: 1;
+      max-width: 720px;
+      height: 48px;
+      background: var(--bg-surface);
+      border-radius: var(--radius-pill);
+      display: flex;
+      align-items: center;
+      padding: 0 16px;
+      gap: 12px;
+      transition: background 0.15s, box-shadow 0.15s;
+    }
+
+    .search-box:focus-within {
+      background: #ffffff;
+      box-shadow: 0 1px 3px 1px rgba(60, 64, 67, 0.15), 0 1px 2px 0 rgba(60, 64, 67, 0.3);
+    }
+
+    .search-box svg {
+      width: 20px;
+      height: 20px;
+      color: var(--text-secondary);
+      flex-shrink: 0;
+    }
+
+    .search-box input {
+      width: 100%;
+      border: none;
+      background: transparent;
+      font-size: 16px;
+      color: var(--text-primary);
+      outline: none;
+    }
+
+    .search-box input::placeholder {
+      color: var(--text-secondary);
+    }
+
+    /* Topbar Right Actions */
+    .topbar-right {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .icon-btn {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      border: none;
+      background: transparent;
+      color: var(--text-secondary);
+      display: grid;
+      place-items: center;
+      cursor: pointer;
+      text-decoration: none;
+      transition: background 0.15s;
+    }
+
+    .icon-btn:hover {
+      background: var(--bg-surface);
+    }
+
+    .avatar {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: var(--accent-blue);
+      color: #fff;
+      font-size: 15px;
+      font-weight: 500;
+      display: grid;
+      place-items: center;
+      text-decoration: none;
+    }
+
+    /* Layout Shell */
+    #sidebar-check {
+      display: none;
+    }
+
+    .layout {
+      display: flex;
+      padding-top: var(--header-height);
+    }
+
+    /* Left Sidebar (Desktop) */
+    .sidebar {
+      position: fixed;
+      top: var(--header-height);
+      left: 0;
+      bottom: 0;
+      width: var(--sidebar-width);
+      background: var(--bg-sidebar);
+      padding: 12px 12px 24px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      overflow-y: auto;
+      z-index: 30;
+      transition: transform 0.2s ease;
+    }
+
+    .nav-group {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .nav-item {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      height: 44px;
+      padding: 0 16px;
+      border-radius: var(--radius-pill);
+      color: var(--text-primary);
+      text-decoration: none;
+      font-size: 14px;
+      font-weight: 500;
+      transition: background 0.15s;
+    }
+
+    .nav-item:hover {
+      background: var(--bg-surface);
+    }
+
+    .nav-item.active {
+      background: var(--bg-active-nav);
+      color: #001d35;
+    }
+
+    .nav-item svg {
+      width: 20px;
+      height: 20px;
+      flex-shrink: 0;
+    }
+
+    .nav-divider {
+      height: 1px;
+      background: var(--border-subtle);
+      margin: 10px 12px;
+    }
+
+    .storage-box {
+      padding: 14px 16px;
+      border-radius: var(--radius-card);
+      background: var(--bg-surface);
+      font-size: 12px;
+      color: var(--text-secondary);
+    }
+
+    .storage-bar {
+      height: 4px;
+      background: #d3e3fd;
+      border-radius: 4px;
+      overflow: hidden;
+      margin: 8px 0;
+    }
+
+    .storage-fill {
+      width: 68%;
+      height: 100%;
+      background: var(--accent-blue);
+      border-radius: 4px;
+    }
+
+    /* Main Content Area */
+    .main-content {
+      flex: 1;
+      margin-left: var(--sidebar-width);
+      padding: 8px 24px 96px;
+      max-width: 100%;
+    }
+
+    /* Memories / Highlights Strip */
+    .section-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin: 12px 0 12px;
+    }
+
+    .section-title {
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--text-primary);
+    }
+
+    .memories-row {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(168px, 1fr));
+      gap: 12px;
+      margin-bottom: 28px;
+    }
+
+    .memory-card {
+      position: relative;
+      height: 220px;
+      border-radius: var(--radius-card);
+      overflow: hidden;
+      display: block;
+      text-decoration: none;
+      background: var(--bg-surface);
+    }
+
+    .memory-card img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+      transition: transform 0.25s ease;
+    }
+
+    .memory-card:hover img {
+      transform: scale(1.03);
+    }
+
+    .memory-card::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(to top, rgba(0, 0, 0, 0.68) 0%, rgba(0, 0, 0, 0.05) 55%, transparent 100%);
+    }
+
+    .memory-label {
+      position: absolute;
+      left: 12px;
+      right: 12px;
+      bottom: 12px;
+      z-index: 2;
+      color: #ffffff;
+      font-size: 14px;
+      font-weight: 500;
+      line-height: 1.25;
+    }
+
+    .memory-sub {
+      display: block;
+      font-size: 11px;
+      font-weight: 400;
+      opacity: 0.85;
+      margin-bottom: 2px;
+    }
+
+    /* Timeline Date Group & Justified-style Grid */
+    .date-group {
+      margin-bottom: 24px;
+    }
+
+    .date-heading {
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--text-secondary);
+      padding: 12px 0 10px;
+      position: sticky;
+      top: var(--header-height);
+      background: rgba(255, 255, 255, 0.94);
+      backdrop-filter: blur(6px);
+      z-index: 15;
+    }
+
+    .photo-grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 4px;
+    }
+
+    .photo-tile {
+      position: relative;
+      height: 210px;
+      flex-grow: 1;
+      overflow: hidden;
+      background: var(--bg-surface);
+      display: block;
+    }
+
+    .photo-tile.wide {
+      flex-grow: 1.65;
+    }
+
+    .photo-tile.narrow {
+      flex-grow: 0.72;
+    }
+
+    .photo-tile img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+      transition: transform 0.2s ease, filter 0.2s ease;
+    }
+
+    .photo-tile:hover img {
+      transform: scale(1.02);
+      filter: brightness(0.95);
+    }
+
+    .photo-tile::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(to bottom, rgba(0, 0, 0, 0.22) 0%, transparent 35%);
+      opacity: 0;
+      transition: opacity 0.15s;
+    }
+
+    .photo-tile:hover::after {
+      opacity: 1;
+    }
+
+    .check-circle {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      border: 2px solid rgba(255, 255, 255, 0.9);
+      background: rgba(0, 0, 0, 0.2);
+      z-index: 2;
+      opacity: 0;
+      transition: opacity 0.15s;
+    }
+
+    .photo-tile:hover .check-circle {
+      opacity: 1;
+    }
+
+    /* Lightbox Modal via :target */
+    .lightbox {
+      position: fixed;
+      inset: 0;
+      background: #000000;
+      z-index: 100;
+      display: none;
+      flex-direction: column;
+      justify-content: space-between;
+      padding: 16px 20px;
+      color: #ffffff;
+    }
+
+    .lightbox:target {
+      display: flex;
+    }
+
+    .lightbox-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .lightbox-meta {
+      font-size: 14px;
+      color: #e8eaed;
+    }
+
+    .lightbox-close {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.12);
+      color: #ffffff;
+      text-decoration: none;
+      display: grid;
+      place-items: center;
+      font-size: 20px;
+    }
+
+    .lightbox-close:hover {
+      background: rgba(255, 255, 255, 0.22);
+    }
+
+    .lightbox-stage {
+      flex: 1;
+      display: grid;
+      place-items: center;
+      padding: 16px 0;
+      overflow: hidden;
+    }
+
+    .lightbox-stage img {
+      max-width: 100%;
+      max-height: 82vh;
+      object-fit: contain;
+      border-radius: 4px;
+    }
+
+    /* Mobile Floating Bottom Bar (Photos / Collections / Create + Search) */
+    .mobile-bottom-nav {
+      display: none;
+    }
+
+    @media (max-width: 900px) {
+      .topbar-left {
+        min-width: auto;
+      }
+
+      .brand span {
+        display: none;
+      }
+
+      .sidebar {
+        transform: translateX(-100%);
+        box-shadow: 4px 0 16px rgba(0, 0, 0, 0.12);
+      }
+
+      #sidebar-check:checked ~ .layout .sidebar {
+        transform: translateX(0);
+      }
+
+      .main-content {
+        margin-left: 0;
+        padding: 8px 12px 104px;
+      }
+
+      .photo-tile {
+        height: 132px;
+      }
+
+      .memories-row {
+        grid-template-columns: repeat(3, minmax(112px, 1fr));
+        gap: 8px;
+      }
+
+      .memory-card {
+        height: 156px;
+      }
+
+      .mobile-bottom-nav {
+        position: fixed;
+        bottom: 16px;
+        left: 16px;
+        right: 16px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        z-index: 50;
+      }
+
+      .bottom-pill {
+        flex: 1;
+        height: 56px;
+        background: var(--bg-surface);
+        border-radius: var(--radius-pill);
+        display: flex;
+        align-items: center;
+        justify-content: space-around;
+        padding: 0 8px;
+        box-shadow: 0 4px 14px rgba(0, 0, 0, 0.12);
+      }
+
+      .bottom-tab {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 2px;
+        text-decoration: none;
+        color: var(--text-secondary);
+        font-size: 11px;
+        font-weight: 500;
+        padding: 6px 14px;
+        border-radius: var(--radius-pill);
+      }
+
+      .bottom-tab.active {
+        background: var(--bg-active-nav);
+        color: #001d35;
+      }
+
+      .bottom-tab svg {
+        width: 20px;
+        height: 20px;
+      }
+
+      .bottom-search-fab {
+        width: 56px;
+        height: 56px;
+        border-radius: 50%;
+        background: var(--bg-surface);
+        color: var(--text-primary);
+        display: grid;
+        place-items: center;
+        text-decoration: none;
+        box-shadow: 0 4px 14px rgba(0, 0, 0, 0.12);
+        flex-shrink: 0;
+      }
+    }
+  </style>
 </head>
 <body>
+  <input type="checkbox" id="sidebar-check">
 
-    <!-- Navbar -->
-    <header class="navbar">
-        <div class="logo">
-            <span>🌈</span>
-            <h2>Google Photos</h2>
-        </div>
-
-        <div class="search-box">
-            <input type="text" placeholder="Search your photos">
-        </div>
-
-        <div class="profile">
-            <span>❔</span>
-            <span>⚙️</span>
-            <img src="https://i.pravatar.cc/40" alt="Profile">
-        </div>
-    </header>
-
-    <!-- Main Container -->
-    <div class="container">
-
-        <!-- Sidebar -->
-        <aside class="sidebar">
-            <button class="backup-btn">☁️ Backup</button>
-
-            <ul>
-                <li class="active">🏠 Home</li>
-                <li>📷 Photos</li>
-                <li>🔍 Explore</li>
-                <li>🗂️ Albums</li>
-                <li>⭐ Favorites</li>
-                <li>🗑️ Archive</li>
-                <li>🗑️ Trash</li>
-            </ul>
-        </aside>
-
-        <!-- Main Content -->
-        <main class="content">
-
-            <h1>Photos</h1>
-            <p class="subtitle">Your memories, all in one place.</p>
-
-            <h3>Today</h3>
-
-            <!-- Photo Gallery -->
-            <div class="gallery">
-
-                <div class="photo">
-                    <img src="https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?w=600" alt="Mountain">
-                </div>
-
-                <div class="photo">
-                    <img src="https://images.unsplash.com/photo-1470252649378-9c29740c9fa8?w=600" alt="Sunrise">
-                </div>
-
-                <div class="photo">
-                    <img src="https://images.unsplash.com/photo-1470770841072-f978cf4d019e?w=600" alt="Lake">
-                </div>
-
-                <div class="photo">
-                    <img src="https://images.unsplash.com/photo-1501785888041-af3ef285b470?w=600" alt="Nature">
-                </div>
-
-                <div class="photo">
-                    <img src="https://images.unsplash.com/photo-1472214103451-9374bd1c798e?w=600" alt="Green field">
-                </div>
-
-                <div class="photo">
-                    <img src="https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=600" alt="Forest">
-                </div>
-
-                <div class="photo">
-                    <img src="https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=600" alt="Beach">
-                </div>
-
-                <div class="photo">
-                    <img src="https://images.unsplash.com/photo-1518837695005-2083093ee35b?w=600" alt="Ocean">
-                </div>
-
-            </div>
-
-        </main>
-
+  <!-- Top Bar -->
+  <header class="topbar" id="top">
+    <div class="topbar-left">
+      <label for="sidebar-check" class="menu-toggle-label" aria-label="Toggle navigation menu">
+        <svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor">
+          <path d="M3 6h18v2H3V6zm0 5h18v2H3v-2zm0 5h18v2H3v-2z"/>
+        </svg>
+      </label>
+      <a href="#top" class="brand">
+        <svg viewBox="0 0 24 24">
+          <path fill="#ea4335" d="M12 1.5a6.5 6.5 0 0 1 6.5 6.5V12H6.5V8A6.5 6.5 0 0 1 12 1.5z"/>
+          <path fill="#4285f4" d="M22.5 12A6.5 6.5 0 0 1 16 18.5H12V6.5h4a6.5 6.5 0 0 1 6.5 5.5z"/>
+          <path fill="#34a853" d="M12 22.5a6.5 6.5 0 0 1-6.5-6.5V12h12v4a6.5 6.5 0 0 1-5.5 6.5z"/>
+          <path fill="#fbbc05" d="M1.5 12A6.5 6.5 0 0 1 8 5.5h4v12H8A6.5 6.5 0 0 1 1.5 12z"/>
+        </svg>
+        <span>Google Photos</span>
+      </a>
     </div>
 
-</body>
-</html>
+    <div class="search-box">
+      <svg viewBox="0 0 24 24" fill="currentColor">
+        <path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/>
+      </svg>
+      <input type="search" placeholder="Search your photos and albums" aria-label="Search your photos and albums">
+    </div>
+
+    <div class="topbar-right">
+      <a href="#top" class="icon-btn" title="Upload" aria-label="Upload">
+        <svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor">
+          <path d="M9 16h6v-6h4l-7-7-7 7h4v6zm-4 2h14v2H5v-2z"/>
+        </svg>
+      </a>
+      <a href="#top" class="avatar" title="Account">A</a>
+    </div>
+  </header>
+
+  <div class="layout">
+    <!-- Left Navigation Sidebar -->
+    <aside class="sidebar">
+      <div class="nav-group">
+        <a href="#top" class="nav-item active">
+          <svg viewBox="0 0 24 24" fill="currentColor">
+            <path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"/>
+          </svg>
+          <span>Photos</span>
+        </a>
+        <a href="#memories" class="nav-item">
+          <svg viewBox="0 0 24 24" fill="currentColor">
+            <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+          </svg>
+          <span>Memories</span>
+        </a>
+
+        <div class="nav-divider"></div>
+
+        <a href="#timeline" class="nav-item">
+          <svg viewBox="0 0 24 24" fill="currentColor">
+            <path d="M4 6H2v14c0 1.1.9 2 2 2h14v-2H4V6zm16-4H8c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-1 9H9V9h10v2zm-4 4H9v-2h6v2zm4-8H9V5h10v2z"/>
+          </svg>
+          <span>Albums</span>
+        </a>
+        <a href="#timeline" class="nav-item">
+          <svg viewBox="0 0 24 24" fill="currentColor">
+            <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+          </svg>
+          <span>People &amp; pets</span>
+        </a>
+        <a href="#timeline" class="nav-item">
+          <svg viewBox="0 0 24 24" fill="currentColor">
+            <path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81 1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9c-1.66 0-3 1.34-3 3s1.34 3 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.16c-.05.21-.08.43-.08.65 0 1.61 1.31 2.92 2.92 2.92 1.61 0 2.92-1.31 2.92-2.92s-1.31-2.92-2.92-2.92z"/>
+          </svg>
+          <span>Sharing</span>
+        </a>
+        <a href="#timeline" class="nav-item">
+          <svg viewBox="0 0 24 24" fill="currentColor">
+            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/>
+          </svg>
+          <span>Updates</span>
+        </a>
+        <a href="#timeline" class="nav-item">
+          <svg viewBox="0 0 24 24" fill="currentColor">
+            <path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1 1.71 0 3.1 1.39 3.1 3.1v2z"/>
+          </svg>
+          <span>Locked Folder</span>
+        </a>
+        <a href="#timeline" class="nav-item">
+          <svg viewBox="0 0 24 24" fill="currentColor">
+            <path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/>
+          </svg>
+          <span>Trash</span>
+        </a>
+      </div>
+
+      <div class="storage-box">
+        <div>Storage</div>
+        <div class="storage-bar">
+          <div class="storage-fill"></div>
+        </div>
+        <div>10.2 GB of 15 GB used</div>
+      </div>
+    </aside>
+
+    <!-- Main Photos Feed -->
+    <main class="main-content" id="timeline">
+      <div class="section-header" id="memories">
+        <h2 class="section-title">Memories</h2>
+      </div>
+
+      <div class="memories-row">
+        <a href="#photo-1" class="memory-card">
+          <img src="https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=600&q=80" alt="Coastal horizon at sunset">
+          <div class="memory-label">
+            <span class="memory-sub">3 years ago</span>
+            Golden hour coast
+          </div>
+        </a>
+
+        <a href="#photo-3" class="memory-card">
+          <img src="https://images.unsplash.com/photo-1469474968028-56623f02e42e?auto=format&fit=crop&w=600&q=80" alt="Mountain valley overlook">
+          <div class="memory-label">
+            <span class="memory-sub">Last summer</span>
+            Ridge trail morning
+          </div>
+        </a>
+
+        <a href="#photo-5" class="memory-card">
+          <img src="https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&w=600&q=80" alt="Warm cafe interior">
+          <div class="memory-label">
+            <span class="memory-sub">Recent</span>
+            Weekend coffee spot
+          </div>
+        </a>
+      </div>
+
+      <!-- Date Group 1 -->
+      <section class="date-group">
+        <h3 class="date-heading">Today</h3>
+        <div class="photo-grid">
+          <a href="#photo-1" class="photo-tile wide" aria-label="View photo 1">
+            <span class="check-circle"></span>
+            <img src="https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=1000&q=80" alt="Ocean waves on sandy shore">
+          </a>
+          <a href="#photo-2" class="photo-tile narrow" aria-label="View photo 2">
+            <span class="check-circle"></span>
+            <img src="https://images.unsplash.com/photo-1518791841217-8f162f1e1131?auto=format&fit=crop&w=700&q=80" alt="Tabby cat resting indoors">
+          </a>
+          <a href="#photo-3" class="photo-tile wide" aria-label="View photo 3">
+            <span class="check-circle"></span>
+            <img src="https://images.unsplash.com/photo-1469474968028-56623f02e42e?auto=format&fit=crop&w=1000&q=80" alt="Sunlit mountain peaks and pine trees">
+          </a>
+          <a href="#photo-4" class="photo-tile" aria-label="View photo 4">
+            <span class="check-circle"></span>
+            <img src="https://images.unsplash.com/photo-1501785888041-af3ef285b470?auto=format&fit=crop&w=900&q=80" alt="Calm lake reflection at dusk">
+          </a>
+        </div>
+      </section>
+
+      <!-- Date Group 2 -->
+      <section class="date-group">
+        <h3 class="date-heading">Fri, Nov 20</h3>
+        <div class="photo-grid">
+          <a href="#photo-5" class="photo-tile narrow" aria-label="View photo 5">
+            <span class="check-circle"></span>
+            <img src="https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&w=700&q=80" alt="Dining room lighting and tables">
+          </a>
+          <a href="#photo-6" class="photo-tile wide" aria-label="View photo 6">
+            <span class="check-circle"></span>
+            <img src="https://images.unsplash.com/photo-1477959858617-67f85cf4f1df?auto=format&fit=crop&w=1100&q=80" alt="City skyline at twilight">
+          </a>
+          <a href="#photo-7" class="photo-tile" aria-label="View photo 7">
+            <span class="check-circle"></span>
+            <img src="https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?auto=format&fit=crop&w=800&q=80" alt="Latte art in ceramic cup">
+          </a>
+          <a href="#photo-8" class="photo-tile wide" aria-label="View photo 8">
+            <span class="check-circle"></span>
+            <img src="https://images.unsplash.com/photo-1441974231531-c6227db76b6e?auto=format&fit=crop&w=1100&q=80" alt="Sunlight filtering through forest canopy">
+          </a>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <!-- Lightbox Modals -->
+  <div id="photo-1" class="lightbox">
+    <div class="lightbox-top">
+      <div class="lightbox-meta">Today · 9:14 AM</div>
+      <a href="#timeline" class="lightbox-close" aria-label="Close photo">&times;</a>
+    </div>
+    <div class="lightbox-stage">
+      <img src="https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=1400&q=85" alt="Ocean waves on sandy shore">
+    </div>
+  </div>
+
+  <div id="photo-2" class="lightbox">
+    <div class="lightbox-top">
+      <div class="lightbox-meta">Today · 8:02 AM</div>
+      <a href="#timeline" class="lightbox-close" aria-label="Close photo">&times;</a>
+    </div>
+    <div class="lightbox-stage">
+      <img src="https://images.unsplash.com/photo-1518791841217-8f162f1e1131?auto=format&fit=crop&w=1200&q=85" alt="Tabby cat resting indoors">
+    </div>
+  </div>
+
+  <div id="photo-3" class="lightbox">
+    <div class="lightbox-top">
+      <div class="lightbox-meta">Today · 6:45 AM</div>
+      <a href="#timeline" class="lightbox-close" aria-label="Close photo">&times;</a>
+    </div>
+    <div class="lightbox-stage">
+      <img src="https://images.unsplash.com/photo-1469474968028-56623f02e42e?auto=format&fit=crop&w=1400&q=85" alt="Sunlit mountain peaks and pine trees">
+    </div>
+  </div>
+
+  <div id="photo-4" class="lightbox">
+    <div class="lightbox-top">
+      <div class="lightbox-meta">Today · 5:50 AM</div>
+      <a href="#timeline" class="lightbox-close" aria-label="Close photo">&times;</a>
+    </div>
+    <div class="lightbox-stage">
+      <img src="https://images.unsplash.com/photo-1501785888041-af3ef285b470?auto=format&fit=crop&w=1400&q=85" alt="Calm lake reflection at dusk">
+    </div>
+  </div>
+
+  <div id="photo-5" class="lightbox">
+    <div class="lightbox-top">
+      <div class="lightbox-meta">Fri, Nov 20 · 8:20 PM</div>
+      <a href="#timeline" class="lightbox-close" aria-label="Close photo">&times;</a>
+    </div>
+    <div class="lightbox-stage">
+      <img src="https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&w=1200&q=85" alt="Dining room lighting and tables">
+    </div>
+  </div>
+
+  <div id="photo-6" class="lightbox">
+    <div class="lightbox-top">
+      <div class="lightbox-meta">Fri, Nov 20 · 6:15 PM</div>
+      <a href="#timeline" class="lightbox-close" aria-label="Close photo">&times;</a>
+    </div>
+    <div class="lightbox-stage">
+      <img src="https://images.unsplash.com/photo-1477959858617-67f85cf4f1df?auto=format&fit=crop&w=1400&q=85" alt="City skyline at twilight">
+    </div>
+  </div>
+
+  <div id="photo-7" class="lightbox">
+    <div class="lightbox-top">
+      <div class="lightbox-meta">Fri, Nov 20 · 10:10 AM</div>
+      <a href="#timeline" class="lightbox-close" aria-label="Close photo">&times;</a>
+    </div>
+    <div class="lightbox-stage">
+      <img src="https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?auto=format&fit=crop&w=1200&q=85" alt="Latte art in ceramic cup">
+    </div>
+  </div>
+
+  <div id="photo-8" class="lightbox">
+    <div class="lightbox-top">
+      <div class="lightbox-meta">Fri, Nov 20 · 7:40 AM</div>
+      <a href="#timeline" class="lightbox-close" aria-label="Close photo">&times;</a>
+    </div>
+    <div class="lightbox-stage">
+      <img src="https://images.unsplash.com/photo-1441974231531-c6227db76b6e?auto=format&fit=crop&w=1400&q=85" alt="Sunlight filtering through forest canopy">
+    </div>
+  </div>
+
+  <!-- Mobile Floating Bottom Navigation -->
+  <nav class="mobile-bottom-nav" aria-label="Mobile navigation">
+    <div class="bottom-pill">
+      <a href="#top" class="bottom-tab active">
+        <svg viewBox="0 0 24 24" fill="currentColor">
+          <path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"/>

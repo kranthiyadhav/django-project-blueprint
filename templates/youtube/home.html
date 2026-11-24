@@ -1,187 +1,430 @@
-{% load static %}
+{%load static %}
 <!DOCTYPE html>
-<html lang="en">
+
+<html lang="en" class="dark">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>YouTube Home Page</title>
-    <link rel="stylesheet" href="{% static 'css/home.css' %}">
+    <title>YouTube Clone</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        ytDarkBg: '#0f0f0f',
+                        ytDarkHeader: '#0f0f0f',
+                        ytDarkSidebar: '#0f0f0f',
+                        ytDarkCard: '#181818',
+                        ytDarkHover: '#272727',
+                        ytDarkText: '#f1f1f1',
+                        ytDarkMuted: '#aaa',
+                        ytRed: '#ff0000',
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Inter Font -->
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Roboto', sans-serif;
+        }
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #555;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #888;
+        }
+        .hide-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .hide-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
 </head>
-<body>
+<body class="bg-ytDarkBg text-ytDarkText min-h-screen flex flex-col overflow-x-hidden">
 
-    <!-- Header -->
-    <header class="header">
-
-        <div class="logo-section">
-            <span class="menu">☰</span>
-            <h2><span class="youtube-icon">▶</span> YouTube</h2>
+    <!-- TOP NAVIGATION BAR -->
+    <header class="sticky top-0 z-50 bg-ytDarkHeader/95 backdrop-blur-md px-4 h-14 flex items-center justify-between border-b border-neutral-800">
+        <!-- Left Section: Logo & Toggle -->
+        <div class="flex items-center gap-4">
+            <button id="sidebarToggle" class="p-2 hover:bg-ytDarkHover rounded-full text-xl w-10 h-10 flex items-center justify-center transition" title="Toggle Sidebar">
+                <i class="fa-solid fa-bars"></i>
+            </button>
+            <a href="#" class="flex items-center gap-1 group">
+                <div class="relative text-ytRed text-2xl flex items-center justify-center">
+                    <i class="fa-brands fa-youtube text-2xl"></i>
+                </div>
+                <span class="font-bold text-xl tracking-tighter text-white font-sans flex items-center">
+                    YouTube <span class="text-[10px] text-neutral-400 font-normal ml-1 self-start">IN</span>
+                </span>
+            </a>
         </div>
 
-        <div class="search-section">
-            <input type="text" placeholder="Search">
-            <button>⌕</button>
-            <span class="mic">🎤</span>
+        <!-- Center Section: Search Bar -->
+        <div class="flex-1 max-w-2xl mx-4 hidden sm:flex items-center justify-center">
+            <form class="flex w-full max-w-xl items-center" onsubmit="event.preventDefault();">
+                <div class="flex w-full items-center bg-[#121212] border border-neutral-700 rounded-l-full px-4 py-1.5 focus-within:border-blue-500 shadow-inner">
+                    <i class="fa-solid fa-magnifying-glass text-neutral-400 mr-3 hidden focus-within:block"></i>
+                    <input type="text" placeholder="Search" class="w-full bg-transparent text-white focus:outline-none text-sm placeholder-neutral-500">
+                    <button type="button" class="text-neutral-400 hover:text-white px-1">
+                        <i class="fa-solid fa-keyboard text-xs"></i>
+                    </button>
+                </div>
+                <button type="submit" class="bg-neutral-800 hover:bg-neutral-700 border border-l-0 border-neutral-700 rounded-r-full px-6 py-2 transition" title="Search">
+                    <i class="fa-solid fa-magnifying-glass text-neutral-300"></i>
+                </button>
+            </form>
+            <button class="ml-3 p-2.5 bg-neutral-800 hover:bg-neutral-700 rounded-full text-neutral-200 transition" title="Search with your voice">
+                <i class="fa-solid fa-microphone"></i>
+            </button>
         </div>
 
-        <div class="profile-section">
-            <button class="create">+ Create</button>
-            <span>🔔</span>
-            <img src="https://i.pravatar.cc/40" alt="Profile">
+        <!-- Right Section: Action Icons & Profile -->
+        <div class="flex items-center gap-1 sm:gap-3">
+            <button class="sm:hidden p-2 hover:bg-ytDarkHover rounded-full text-lg w-10 h-10 flex items-center justify-center">
+                <i class="fa-solid fa-magnifying-glass"></i>
+            </button>
+            <button class="p-2 hover:bg-ytDarkHover rounded-full text-lg w-10 h-10 flex items-center justify-center" title="Create">
+                <i class="fa-solid fa-video"></i>
+            </button>
+            <button class="p-2 hover:bg-ytDarkHover rounded-full text-lg w-10 h-10 relative flex items-center justify-center" title="Notifications">
+                <i class="fa-regular fa-bell"></i>
+                <span class="absolute top-1 right-1 bg-ytRed text-white text-[10px] font-bold px-1.5 rounded-full border-2 border-ytDarkHeader">9+</span>
+            </button>
+            <button class="ml-2 w-8 h-8 rounded-full overflow-hidden focus:ring-2 focus:ring-blue-500 transition">
+                <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=120&q=80" alt="Profile" class="w-full h-full object-cover" onerror="this.src='https://placehold.co/40x40/333/fff?text=User'">
+            </button>
         </div>
-
     </header>
 
-    <!-- Sidebar -->
-    <aside class="sidebar">
+    <!-- MAIN CONTAINER (SIDEBAR + CONTENT) -->
+    <div class="flex flex-1 relative">
 
-        <div class="side-item active">
-            <span>⌂</span> Home
-        </div>
+        <!-- LEFT SIDEBAR -->
+        <aside id="sidebar" class="w-64 bg-ytDarkSidebar shrink-0 hidden md:block overflow-y-auto h-[calc(100vh-3.5rem)] sticky top-14 px-3 py-3 select-none border-r border-neutral-800 transition-all duration-300">
+            <!-- Section 1: Main Nav -->
+            <div class="space-y-1 pb-3 border-b border-neutral-800">
+                <a href="#" class="flex items-center gap-6 px-3 py-2.5 rounded-lg bg-ytDarkHover font-medium text-sm text-white">
+                    <i class="fa-solid fa-house text-lg w-6 text-center"></i>
+                    <span>Home</span>
+                </a>
+                <a href="#" class="flex items-center gap-6 px-3 py-2.5 rounded-lg hover:bg-ytDarkHover font-medium text-sm text-neutral-300 hover:text-white transition">
+                    <i class="fa-solid fa-bolt text-lg w-6 text-center"></i>
+                    <span>Shorts</span>
+                </a>
+                <a href="#" class="flex items-center gap-6 px-3 py-2.5 rounded-lg hover:bg-ytDarkHover font-medium text-sm text-neutral-300 hover:text-white transition">
+                    <i class="fa-solid fa-tv text-lg w-6 text-center"></i>
+                    <span>Subscriptions</span>
+                </a>
+            </div>
 
-        <div class="side-item">
-            <span>▶</span> Shorts
-        </div>
+            <!-- Section 2: Library & History -->
+            <div class="py-3 border-b border-neutral-800 space-y-1">
+                <div class="px-3 py-1 flex items-center justify-between text-white font-semibold text-sm">
+                    <span>You</span>
+                    <i class="fa-solid fa-chevron-right text-xs"></i>
+                </div>
+                <a href="#" class="flex items-center gap-6 px-3 py-2.5 rounded-lg hover:bg-ytDarkHover font-medium text-sm text-neutral-300 hover:text-white transition">
+                    <i class="fa-solid fa-clock-rotate-left text-lg w-6 text-center"></i>
+                    <span>History</span>
+                </a>
+                <a href="#" class="flex items-center gap-6 px-3 py-2.5 rounded-lg hover:bg-ytDarkHover font-medium text-sm text-neutral-300 hover:text-white transition">
+                    <i class="fa-solid fa-[#121212] fa-list-ul text-lg w-6 text-center"></i>
+                    <span>Playlists</span>
+                </a>
+                <a href="#" class="flex items-center gap-6 px-3 py-2.5 rounded-lg hover:bg-ytDarkHover font-medium text-sm text-neutral-300 hover:text-white transition">
+                    <i class="fa-solid fa-circle-play text-lg w-6 text-center"></i>
+                    <span>Your Videos</span>
+                </a>
+                <a href="#" class="flex items-center gap-6 px-3 py-2.5 rounded-lg hover:bg-ytDarkHover font-medium text-sm text-neutral-300 hover:text-white transition">
+                    <i class="fa-solid fa-clock text-lg w-6 text-center"></i>
+                    <span>Watch Later</span>
+                </a>
+                <a href="#" class="flex items-center gap-6 px-3 py-2.5 rounded-lg hover:bg-ytDarkHover font-medium text-sm text-neutral-300 hover:text-white transition">
+                    <i class="fa-regular fa-thumbs-up text-lg w-6 text-center"></i>
+                    <span>Liked Videos</span>
+                </a>
+            </div>
 
-        <div class="side-item">
-            <span>▣</span> Subscriptions
-        </div>
-
-        <hr>
-
-        <h3>You ></h3>
-
-        <div class="side-item">
-            <span>◷</span> History
-        </div>
-
-        <div class="side-item">
-            <span>▤</span> Playlists
-        </div>
-
-        <div class="side-item">
-            <span>◉</span> Your videos
-        </div>
-
-        <div class="side-item">
-            <span>⏱</span> Watch later
-        </div>
-
-        <div class="side-item">
-            <span>♡</span> Liked videos
-        </div>
-
-        <hr>
-
-        <h3>Explore</h3>
-
-        <div class="side-item">
-            <span>🔥</span> Trending
-        </div>
-
-        <div class="side-item">
-            <span>🎵</span> Music
-        </div>
-
-        <div class="side-item">
-            <span>🎮</span> Gaming
-        </div>
-
-    </aside>
-
-    <!-- Main Content -->
-    <main class="main-content">
-
-        <!-- Categories -->
-        <div class="categories">
-            <button class="selected">All</button>
-            <button>Music</button>
-            <button>Gaming</button>
-            <button>Live</button>
-            <button>News</button>
-            <button>Cooking</button>
-            <button>Comedy</button>
-            <button>Technology</button>
-            <button>Recently uploaded</button>
-        </div>
-
-        <!-- Videos -->
-        <section class="video-container">
-
-            <div class="video-card">
-                 <img src="{% static 'img/nature3.jpg' %}" alt="Video thumbnail">
-                <div class="video-details">
-                    <div class="channel-logo">T</div>
-                    <div>
-                        <h3>Learn HTML and CSS for Beginners</h3>
-                        <p>Tech Tutorials</p>
-                        <p>120K views · 2 days ago</p>
-                    </div>
+            <!-- Section 3: Subscriptions -->
+            <div class="py-3 border-b border-neutral-800">
+                <h3 class="px-3 text-sm font-semibold text-neutral-300 mb-2">Subscriptions</h3>
+                <div class="space-y-1">
+                    <a href="#" class="flex items-center gap-4 px-3 py-2 rounded-lg hover:bg-ytDarkHover text-sm text-neutral-300 hover:text-white">
+                        <img src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=80&q=80" class="w-6 h-6 rounded-full object-cover" alt="Channel avatar">
+                        <span class="truncate">Fireship</span>
+                        <span class="w-1.5 h-1.5 bg-blue-500 rounded-full ml-auto"></span>
+                    </a>
+                    <a href="#" class="flex items-center gap-4 px-3 py-2 rounded-lg hover:bg-ytDarkHover text-sm text-neutral-300 hover:text-white">
+                        <img src="https://images.unsplash.com/photo-1570295999919-56ceb5ecca61?auto=format&fit=crop&w=80&q=80" class="w-6 h-6 rounded-full object-cover" alt="Channel avatar">
+                        <span class="truncate">Traversy Media</span>
+                    </a>
+                    <a href="#" class="flex items-center gap-4 px-3 py-2 rounded-lg hover:bg-ytDarkHover text-sm text-neutral-300 hover:text-white">
+                        <img src="https://images.unsplash.com/photo-1527980965255-d3b416303d12?auto=format&fit=crop&w=80&q=80" class="w-6 h-6 rounded-full object-cover" alt="Channel avatar">
+                        <span class="truncate">Web Dev Simplified</span>
+                        <span class="w-1.5 h-1.5 bg-blue-500 rounded-full ml-auto"></span>
+                    </a>
+                    <a href="#" class="flex items-center gap-4 px-3 py-2 rounded-lg hover:bg-ytDarkHover text-sm text-neutral-300 hover:text-white">
+                        <img src="https://images.unsplash.com/photo-1580489944761-15a19d654956?auto=format&fit=crop&w=80&q=80" class="w-6 h-6 rounded-full object-cover" alt="Channel avatar">
+                        <span class="truncate">FreeCodeCamp</span>
+                    </a>
                 </div>
             </div>
 
-            <div class="video-card">
-                 <img src="{% static 'img/nature4.jfif' %}" alt="Video thumbnail">
-                <div class="video-details">
-                    <div class="channel-logo">M</div>
-                    <div>
-                        <h3>Beautiful Nature and Relaxing Music</h3>
-                        <p>Nature World</p>
-                        <p>1.2M views · 1 week ago</p>
-                    </div>
-                </div>
+            <!-- Section 4: Explore -->
+            <div class="py-3 border-b border-neutral-800 space-y-1">
+                <h3 class="px-3 text-sm font-semibold text-neutral-300 mb-2">Explore</h3>
+                <a href="#" class="flex items-center gap-6 px-3 py-2 rounded-lg hover:bg-ytDarkHover text-sm text-neutral-300 hover:text-white">
+                    <i class="fa-solid fa-fire text-lg w-6 text-center"></i>
+                    <span>Trending</span>
+                </a>
+                <a href="#" class="flex items-center gap-6 px-3 py-2 rounded-lg hover:bg-ytDarkHover text-sm text-neutral-300 hover:text-white">
+                    <i class="fa-solid fa-music text-lg w-6 text-center"></i>
+                    <span>Music</span>
+                </a>
+                <a href="#" class="flex items-center gap-6 px-3 py-2 rounded-lg hover:bg-ytDarkHover text-sm text-neutral-300 hover:text-white">
+                    <i class="fa-solid fa-gamepad text-lg w-6 text-center"></i>
+                    <span>Gaming</span>
+                </a>
+                <a href="#" class="flex items-center gap-6 px-3 py-2 rounded-lg hover:bg-ytDarkHover text-sm text-neutral-300 hover:text-white">
+                    <i class="fa-solid fa-newspaper text-lg w-6 text-center"></i>
+                    <span>News</span>
+                </a>
+                <a href="#" class="flex items-center gap-6 px-3 py-2 rounded-lg hover:bg-ytDarkHover text-sm text-neutral-300 hover:text-white">
+                    <i class="fa-solid fa-trophy text-lg w-6 text-center"></i>
+                    <span>Sports</span>
+                </a>
             </div>
 
-            <div class="video-card">
-                 <img src="{% static 'img/nature4.jfif' %}" alt="Video thumbnail">>
-                <div class="video-details">
-                    <div class="channel-logo">C</div>
-                    <div>
-                        <h3>JavaScript Full Course for Beginners</h3>
-                        <p>Coding Academy</p>
-                        <p>500K views · 5 days ago</p>
-                    </div>
-                </div>
+            <!-- Footer links -->
+            <div class="p-3 text-xs text-neutral-500 space-y-3 leading-relaxed">
+                <div>About Press Copyright Contact us Creators Advertise Developers</div>
+                <div>Terms Privacy Policy & Safety How YouTube works Test new features</div>
+                <div class="text-neutral-600">© 2026 YouTube LLC</div>
+            </div>
+        </aside>
+
+        <!-- MAIN CONTENT AREA -->
+        <main class="flex-1 min-w-0 p-4">
+            
+            <!-- Category Pills Bar -->
+            <div class="sticky top-14 z-40 bg-ytDarkBg/95 backdrop-blur-md pb-4 pt-1 flex items-center gap-3 overflow-x-auto hide-scrollbar">
+                <button class="category-chip px-3 py-1.5 rounded-lg bg-white text-black text-sm font-medium whitespace-nowrap">All</button>
+                <button class="category-chip px-3 py-1.5 rounded-lg bg-ytDarkHover text-white text-sm font-medium hover:bg-neutral-700 whitespace-nowrap transition">Gaming</button>
+                <button class="category-chip px-3 py-1.5 rounded-lg bg-ytDarkHover text-white text-sm font-medium hover:bg-neutral-700 whitespace-nowrap transition">JavaScript</button>
+                <button class="category-chip px-3 py-1.5 rounded-lg bg-ytDarkHover text-white text-sm font-medium hover:bg-neutral-700 whitespace-nowrap transition">Music</button>
+                <button class="category-chip px-3 py-1.5 rounded-lg bg-ytDarkHover text-white text-sm font-medium hover:bg-neutral-700 whitespace-nowrap transition">Podcasts</button>
+                <button class="category-chip px-3 py-1.5 rounded-lg bg-ytDarkHover text-white text-sm font-medium hover:bg-neutral-700 whitespace-nowrap transition">Mixes</button>
+                <button class="category-chip px-3 py-1.5 rounded-lg bg-ytDarkHover text-white text-sm font-medium hover:bg-neutral-700 whitespace-nowrap transition">Live</button>
+                <button class="category-chip px-3 py-1.5 rounded-lg bg-ytDarkHover text-white text-sm font-medium hover:bg-neutral-700 whitespace-nowrap transition">AI & ML</button>
+                <button class="category-chip px-3 py-1.5 rounded-lg bg-ytDarkHover text-white text-sm font-medium hover:bg-neutral-700 whitespace-nowrap transition">Web Development</button>
+                <button class="category-chip px-3 py-1.5 rounded-lg bg-ytDarkHover text-white text-sm font-medium hover:bg-neutral-700 whitespace-nowrap transition">Gadgets</button>
+                <button class="category-chip px-3 py-1.5 rounded-lg bg-ytDarkHover text-white text-sm font-medium hover:bg-neutral-700 whitespace-nowrap transition">Recently uploaded</button>
+                <button class="category-chip px-3 py-1.5 rounded-lg bg-ytDarkHover text-white text-sm font-medium hover:bg-neutral-700 whitespace-nowrap transition">Watched</button>
             </div>
 
-            <div class="video-card">
-                <img src="{% static 'img/nature4.jfif' %}" alt="Video thumbnail">
-                <div class="video-details">
-                    <div class="channel-logo">F</div>
-                    <div>
-                        <h3>Easy and Delicious Homemade Recipes</h3>
-                        <p>Food Corner</p>
-                        <p>80K views · 3 days ago</p>
+            <!-- Video Grid -->
+            <div id="videoGrid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-x-4 gap-y-8 mt-2">
+                
+                <!-- Video Card 1 -->
+                <div class="flex flex-col gap-2 group cursor-pointer">
+                    <div class="relative w-full aspect-video rounded-xl overflow-hidden bg-neutral-800">
+                        <img src="https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=600&q=80" alt="Thumbnail" class="w-full h-full object-cover group-hover:scale-105 transition duration-200">
+                        <span class="absolute bottom-2 right-2 bg-black/80 text-white text-xs font-semibold px-1.5 py-0.5 rounded">14:20</span>
+                    </div>
+                    <div class="flex gap-3 mt-1">
+                        <img src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=80&q=80" class="w-9 h-9 rounded-full object-cover shrink-0 mt-0.5" alt="Avatar">
+                        <div class="flex flex-col">
+                            <h4 class="text-sm font-semibold text-white line-clamp-2 leading-snug group-hover:text-blue-400 transition">Building a Fullstack Next.js App from Scratch in 2026</h4>
+                            <p class="text-xs text-ytDarkMuted mt-1 flex items-center gap-1">
+                                CodeCraft Studios
+                                <i class="fa-solid fa-circle-check text-[10px] text-neutral-400"></i>
+                            </p>
+                            <p class="text-xs text-ytDarkMuted">420K views • 2 days ago</p>
+                        </div>
                     </div>
                 </div>
-            </div>
 
-            <div class="video-card">
-                <img src="{% static 'img/nature4.jfif' %}" alt="Video thumbnail">
-                <div class="video-details">
-                    <div class="channel-logo">T</div>
-                    <div>
-                        <h3>Top 10 Travel Destinations in India</h3>
-                        <p>Travel Diaries</p>
-                        <p>250K views · 1 month ago</p>
+                <!-- Video Card 2 -->
+                <div class="flex flex-col gap-2 group cursor-pointer">
+                    <div class="relative w-full aspect-video rounded-xl overflow-hidden bg-neutral-800">
+                        <img src="https://images.unsplash.com/photo-1550745165-9bc0b252726f?auto=format&fit=crop&w=600&q=80" alt="Thumbnail" class="w-full h-full object-cover group-hover:scale-105 transition duration-200">
+                        <span class="absolute bottom-2 right-2 bg-black/80 text-white text-xs font-semibold px-1.5 py-0.5 rounded">08:45</span>
+                    </div>
+                    <div class="flex gap-3 mt-1">
+                        <img src="https://images.unsplash.com/photo-1570295999919-56ceb5ecca61?auto=format&fit=crop&w=80&q=80" class="w-9 h-9 rounded-full object-cover shrink-0 mt-0.5" alt="Avatar">
+                        <div class="flex flex-col">
+                            <h4 class="text-sm font-semibold text-white line-clamp-2 leading-snug group-hover:text-blue-400 transition">10 Cyberpunk Setup Innovations You Didn't Know Existed</h4>
+                            <p class="text-xs text-ytDarkMuted mt-1 flex items-center gap-1">
+                                TechVision Labs
+                                <i class="fa-solid fa-circle-check text-[10px] text-neutral-400"></i>
+                            </p>
+                            <p class="text-xs text-ytDarkMuted">1.2M views • 1 week ago</p>
+                        </div>
                     </div>
                 </div>
-            </div>
 
-            <div class="video-card">
-                 <img src="{% static 'img/nature4.jfif' %}" alt="Video thumbnail">
-                <div class="video-details">
-                    <div class="channel-logo">G</div>
-                    <div>
-                        <h3>Best Gaming Moments of 2026</h3>
-                        <p>Gaming Zone</p>
-                        <p>900K views · 4 days ago</p>
+                <!-- Video Card 3 -->
+                <div class="flex flex-col gap-2 group cursor-pointer">
+                    <div class="relative w-full aspect-video rounded-xl overflow-hidden bg-neutral-800">
+                        <img src="https://images.unsplash.com/photo-1511512578047-dfb367046420?auto=format&fit=crop&w=600&q=80" alt="Thumbnail" class="w-full h-full object-cover group-hover:scale-105 transition duration-200">
+                        <span class="absolute bottom-2 right-2 bg-ytRed text-white text-xs font-semibold px-1.5 py-0.5 rounded flex items-center gap-1">
+                            <i class="fa-solid fa-signal text-[10px]"></i> LIVE
+                        </span>
+                    </div>
+                    <div class="flex gap-3 mt-1">
+                        <img src="https://images.unsplash.com/photo-1527980965255-d3b416303d12?auto=format&fit=crop&w=80&q=80" class="w-9 h-9 rounded-full object-cover shrink-0 mt-0.5" alt="Avatar">
+                        <div class="flex flex-col">
+                            <h4 class="text-sm font-semibold text-white line-clamp-2 leading-snug group-hover:text-blue-400 transition">Chill Lofi Beats to Relax / Study to 24/7</h4>
+                            <p class="text-xs text-ytDarkMuted mt-1 flex items-center gap-1">
+                                Lofi Girl
+                                <i class="fa-solid fa-circle-check text-[10px] text-neutral-400"></i>
+                            </p>
+                            <p class="text-xs text-ytDarkMuted">15K watching live</p>
+                        </div>
                     </div>
                 </div>
+
+                <!-- Video Card 4 -->
+                <div class="flex flex-col gap-2 group cursor-pointer">
+                    <div class="relative w-full aspect-video rounded-xl overflow-hidden bg-neutral-800">
+                        <img src="https://images.unsplash.com/photo-1498050108023-c5249f4df085?auto=format&fit=crop&w=600&q=80" alt="Thumbnail" class="w-full h-full object-cover group-hover:scale-105 transition duration-200">
+                        <span class="absolute bottom-2 right-2 bg-black/80 text-white text-xs font-semibold px-1.5 py-0.5 rounded">22:15</span>
+                    </div>
+                    <div class="flex gap-3 mt-1">
+                        <img src="https://images.unsplash.com/photo-1580489944761-15a19d654956?auto=format&fit=crop&w=80&q=80" class="w-9 h-9 rounded-full object-cover shrink-0 mt-0.5" alt="Avatar">
+                        <div class="flex flex-col">
+                            <h4 class="text-sm font-semibold text-white line-clamp-2 leading-snug group-hover:text-blue-400 transition">Mastering CSS Grid & Flexbox Masterclass</h4>
+                            <p class="text-xs text-ytDarkMuted mt-1 flex items-center gap-1">
+                                Frontend Ninja
+                            </p>
+                            <p class="text-xs text-ytDarkMuted">89K views • 3 hours ago</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Video Card 5 -->
+                <div class="flex flex-col gap-2 group cursor-pointer">
+                    <div class="relative w-full aspect-video rounded-xl overflow-hidden bg-neutral-800">
+                        <img src="https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=600&q=80" alt="Thumbnail" class="w-full h-full object-cover group-hover:scale-105 transition duration-200">
+                        <span class="absolute bottom-2 right-2 bg-black/80 text-white text-xs font-semibold px-1.5 py-0.5 rounded">18:03</span>
+                    </div>
+                    <div class="flex gap-3 mt-1">
+                        <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=80&q=80" class="w-9 h-9 rounded-full object-cover shrink-0 mt-0.5" alt="Avatar">
+                        <div class="flex flex-col">
+                            <h4 class="text-sm font-semibold text-white line-clamp-2 leading-snug group-hover:text-blue-400 transition">Hardware Secrets: Inside the Quantum Microchips</h4>
+                            <p class="text-xs text-ytDarkMuted mt-1 flex items-center gap-1">
+                                Silicon Breakdown
+                                <i class="fa-solid fa-circle-check text-[10px] text-neutral-400"></i>
+                            </p>
+                            <p class="text-xs text-ytDarkMuted">2.5M views • 1 month ago</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Video Card 6 -->
+                <div class="flex flex-col gap-2 group cursor-pointer">
+                    <div class="relative w-full aspect-video rounded-xl overflow-hidden bg-neutral-800">
+                        <img src="https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?auto=format&fit=crop&w=600&q=80" alt="Thumbnail" class="w-full h-full object-cover group-hover:scale-105 transition duration-200">
+                        <span class="absolute bottom-2 right-2 bg-black/80 text-white text-xs font-semibold px-1.5 py-0.5 rounded">11:50</span>
+                    </div>
+                    <div class="flex gap-3 mt-1">
+                        <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=80&q=80" class="w-9 h-9 rounded-full object-cover shrink-0 mt-0.5" alt="Avatar">
+                        <div class="flex flex-col">
+                            <h4 class="text-sm font-semibold text-white line-clamp-2 leading-snug group-hover:text-blue-400 transition">Top 5 Python Frameworks for AI Development</h4>
+                            <p class="text-xs text-ytDarkMuted mt-1 flex items-center gap-1">
+                                PyCode Central
+                            </p>
+                            <p class="text-xs text-ytDarkMuted">310K views • 4 days ago</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Video Card 7 -->
+                <div class="flex flex-col gap-2 group cursor-pointer">
+                    <div class="relative w-full aspect-video rounded-xl overflow-hidden bg-neutral-800">
+                        <img src="https://images.unsplash.com/photo-1461749280684-dccba630e2f6?auto=format&fit=crop&w=600&q=80" alt="Thumbnail" class="w-full h-full object-cover group-hover:scale-105 transition duration-200">
+                        <span class="absolute bottom-2 right-2 bg-black/80 text-white text-xs font-semibold px-1.5 py-0.5 rounded">45:10</span>
+                    </div>
+                    <div class="flex gap-3 mt-1">
+                        <img src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=80&q=80" class="w-9 h-9 rounded-full object-cover shrink-0 mt-0.5" alt="Avatar">
+                        <div class="flex flex-col">
+                            <h4 class="text-sm font-semibold text-white line-clamp-2 leading-snug group-hover:text-blue-400 transition">Complete Web Security & Ethical Hacking Course</h4>
+                            <p class="text-xs text-ytDarkMuted mt-1 flex items-center gap-1">
+                                CyberGuard HQ
+                                <i class="fa-solid fa-circle-check text-[10px] text-neutral-400"></i>
+                            </p>
+                            <p class="text-xs text-ytDarkMuted">980K views • 3 weeks ago</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Video Card 8 -->
+                <div class="flex flex-col gap-2 group cursor-pointer">
+                    <div class="relative w-full aspect-video rounded-xl overflow-hidden bg-neutral-800">
+                        <img src="https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?auto=format&fit=crop&w=600&q=80" alt="Thumbnail" class="w-full h-full object-cover group-hover:scale-105 transition duration-200">
+                        <span class="absolute bottom-2 right-2 bg-black/80 text-white text-xs font-semibold px-1.5 py-0.5 rounded">05:12</span>
+                    </div>
+                    <div class="flex gap-3 mt-1">
+                        <img src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=80&q=80" class="w-9 h-9 rounded-full object-cover shrink-0 mt-0.5" alt="Avatar">
+                        <div class="flex flex-col">
+                            <h4 class="text-sm font-semibold text-white line-clamp-2 leading-snug group-hover:text-blue-400 transition">Acoustic Guitar Session - Peaceful Evening Melodies</h4>
+                            <p class="text-xs text-ytDarkMuted mt-1 flex items-center gap-1">
+                                Acoustic Waves
+                            </p>
+                            <p class="text-xs text-ytDarkMuted">54K views • 5 days ago</p>
+                        </div>
+                    </div>
+                </div>
+
             </div>
+        </main>
+    </div>
 
-        </section>
+    <!-- Minimal JS for Interactive UI Behavior -->
+    <script>
+        // Sidebar Toggle Functionality
+        const sidebar = document.getElementById('sidebar');
+        const sidebarToggle = document.getElementById('sidebarToggle');
+        
+        sidebarToggle.addEventListener('click', () => {
+            if (sidebar.classList.contains('hidden')) {
+                sidebar.classList.remove('hidden');
+            } else {
+                sidebar.classList.add('hidden');
+            }
+        });
 
-    </main>
-
+        // Category Chips Click Handling
+        const chips = document.querySelectorAll('.category-chip');
+        chips.forEach(chip => {
+            chip.addEventListener('click', () => {
+                chips.forEach(c => {
+                    c.classList.remove('bg-white', 'text-black');
+                    c.classList.add('bg-ytDarkHover', 'text-white');
+                });
+                chip.classList.remove('bg-ytDarkHover', 'text-white');
+                chip.classList.add('bg-white', 'text-black');
+            });
+        });
+    </script>
 </body>
 </html>

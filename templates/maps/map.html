@@ -1,101 +1,508 @@
-{% load static %}
-
+{%load static %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Google Maps</title>
-    <link rel="stylesheet" href="{% static 'css/map.css' %}">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Google Maps — Full Map View</title>
+  <style>
+    :root {
+      --map-land: #f2efe9;
+      --map-block: #f7f5f0;
+      --map-park: #c8e6c9;
+      --map-park-deep: #b2dbb5;
+      --map-water: #a8d1f5;
+      --map-road-minor: #ffffff;
+      --map-road-arterial: #fde293;
+      --map-highway: #f6ad55;
+      --traffic-amber: #f9ab00;
+      --traffic-red: #d93025;
+      --text-primary: #1f1f1f;
+      --text-secondary: #444746;
+      --accent-blue: #1a73e8;
+      --shadow-float: 0 2px 6px rgba(60, 64, 67, 0.24), 0 1px 2px rgba(60, 64, 67, 0.16);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: "Google Sans", Roboto, -apple-system, BlinkMacSystemFont, Arial, sans-serif;
+    }
+
+    html, body {
+      width: 100vw;
+      height: 100vh;
+      overflow: hidden;
+      background: var(--map-land);
+    }
+
+    /* Full-Screen Edge-to-Edge Map */
+    .full-map {
+      position: fixed;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      background: var(--map-land);
+      overflow: hidden;
+    }
+
+    /* Base City Street Grid */
+    .street-grid {
+      position: absolute;
+      inset: -120px;
+      background-image:
+        repeating-linear-gradient(
+          0deg,
+          transparent 0px,
+          transparent 68px,
+          var(--map-road-minor) 68px,
+          var(--map-road-minor) 74px
+        ),
+        repeating-linear-gradient(
+          90deg,
+          transparent 0px,
+          transparent 88px,
+          var(--map-road-minor) 88px,
+          var(--map-road-minor) 94px
+        );
+      transform: rotate(-3deg);
+    }
+
+    /* Parks, Lake & Land Shapes */
+    .park-zone {
+      position: absolute;
+      background: var(--map-park);
+      border: 1.5px solid var(--map-park-deep);
+      border-radius: 38% 62% 54% 46% / 44% 39% 61% 56%;
+    }
+
+    .lake-zone {
+      position: absolute;
+      background: var(--map-water);
+      border: 1.5px solid #8fc2ef;
+      border-radius: 56% 44% 63% 37% / 48% 61% 39% 52%;
+    }
+
+    /* Major Roads & Highways */
+    .road {
+      position: absolute;
+      transform-origin: center center;
+    }
+
+    .road.arterial {
+      height: 9px;
+      background: var(--map-road-arterial);
+      box-shadow: 0 0 0 1.5px rgba(218, 165, 32, 0.35);
+    }
+
+    .road.highway {
+      height: 13px;
+      background: var(--map-highway);
+      box-shadow: 0 0 0 2px rgba(180, 100, 15, 0.35);
+      border-radius: 999px;
+    }
+
+    /* Live Traffic Overlays */
+    .traffic-line {
+      position: absolute;
+      height: 4px;
+      border-radius: 999px;
+      z-index: 4;
+    }
+
+    .traffic-line.amber {
+      background: var(--traffic-amber);
+    }
+
+    .traffic-line.red {
+      background: var(--traffic-red);
+    }
+
+    /* Map Typography (Neighborhoods, Parks, Roads) */
+    .map-text {
+      position: absolute;
+      pointer-events: none;
+      user-select: none;
+      z-index: 6;
+    }
+
+    .label-area {
+      font-size: 13px;
+      font-weight: 600;
+      color: #3c4043;
+      letter-spacing: 0.5px;
+      text-shadow: 0 1px 2px rgba(255, 255, 255, 0.92);
+    }
+
+    .label-park {
+      font-size: 12px;
+      font-weight: 600;
+      color: #1e5628;
+      text-shadow: 0 1px 2px rgba(255, 255, 255, 0.85);
+    }
+
+    .label-water {
+      font-size: 12px;
+      font-style: italic;
+      font-weight: 500;
+      color: #185abc;
+      text-shadow: 0 1px 2px rgba(255, 255, 255, 0.85);
+    }
+
+    .label-street {
+      font-size: 11px;
+      font-weight: 500;
+      color: #444746;
+      background: rgba(255, 255, 255, 0.78);
+      padding: 1px 6px;
+      border-radius: 4px;
+      border: 1px solid rgba(60, 64, 67, 0.14);
+    }
+
+    /* Compact Top Search Bar */
+    .floating-search {
+      position: fixed;
+      top: 14px;
+      left: 14px;
+      width: min(390px, calc(100vw - 28px));
+      height: 46px;
+      background: #ffffff;
+      border-radius: 9999px;
+      box-shadow: var(--shadow-float);
+      display: flex;
+      align-items: center;
+      padding: 0 14px;
+      gap: 10px;
+      z-index: 25;
+    }
+
+    .floating-search svg {
+      width: 20px;
+      height: 20px;
+      color: var(--text-secondary);
+      flex-shrink: 0;
+    }
+
+    .floating-search input {
+      flex: 1;
+      border: none;
+      background: transparent;
+      font-size: 14px;
+      color: var(--text-primary);
+      outline: none;
+    }
+
+    .floating-search a {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: var(--accent-blue);
+      color: #ffffff;
+      display: grid;
+      place-items: center;
+      text-decoration: none;
+      flex-shrink: 0;
+    }
+
+    /* Map Pins */
+    .map-pin {
+      position: absolute;
+      transform: translate(-50%, -100%);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-decoration: none;
+      z-index: 12;
+      transition: transform 0.15s ease;
+    }
+
+    .map-pin:hover {
+      transform: translate(-50%, -108%);
+      z-index: 18;
+    }
+
+    .pin-pill {
+      background: #ffffff;
+      color: #c5221f;
+      border: 1.5px solid #c5221f;
+      border-radius: 9999px;
+      padding: 3px 9px;
+      font-size: 12px;
+      font-weight: 600;
+      white-space: nowrap;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.22);
+    }
+
+    .pin-stem {
+      width: 2px;
+      height: 7px;
+      background: #c5221f;
+    }
+
+    .pin-point {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #c5221f;
+      border: 1.5px solid #ffffff;
+    }
+
+    /* Blue Location Puck */
+    .user-puck {
+      position: absolute;
+      top: 54%;
+      left: 48%;
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      background: var(--accent-blue);
+      border: 3px solid #ffffff;
+      transform: translate(-50%, -50%);
+      box-shadow: 0 0 0 12px rgba(26, 115, 232, 0.2), 0 2px 6px rgba(0, 0, 0, 0.3);
+      z-index: 11;
+    }
+
+    /* Bottom-Right Map Controls + Scale Bar */
+    .bottom-right-stack {
+      position: fixed;
+      right: 14px;
+      bottom: 14px;
+      z-index: 25;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 8px;
+    }
+
+    .zoom-cluster {
+      display: flex;
+      flex-direction: column;
+      background: #ffffff;
+      border-radius: 10px;
+      overflow: hidden;
+      box-shadow: var(--shadow-float);
+    }
+
+    .zoom-btn {
+      width: 38px;
+      height: 38px;
+      display: grid;
+      place-items: center;
+      text-decoration: none;
+      color: var(--text-secondary);
+      font-size: 18px;
+      font-weight: 500;
+      background: #ffffff;
+    }
+
+    .zoom-btn + .zoom-btn {
+      border-top: 1px solid #e0e2e0;
+    }
+
+    .zoom-btn:hover {
+      background: #f0f4f9;
+      color: var(--text-primary);
+    }
+
+    .scale-badge {
+      background: rgba(255, 255, 255, 0.88);
+      border-bottom: 2px solid #3c4043;
+      border-left: 2px solid #3c4043;
+      border-right: 2px solid #3c4043;
+      padding: 1px 8px;
+      font-size: 10px;
+      font-weight: 600;
+      color: #3c4043;
+    }
+
+    /* Pop-up Card When Clicking a Pin */
+    .pin-card {
+      position: fixed;
+      left: 14px;
+      bottom: 14px;
+      width: min(350px, calc(100vw - 82px));
+      background: #ffffff;
+      border-radius: 14px;
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
+      padding: 12px 14px;
+      z-index: 26;
+      display: none;
+    }
+
+    .pin-card:target {
+      display: block;
+    }
+
+    .pin-card-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 8px;
+    }
+
+    .pin-card h2 {
+      font-size: 16px;
+      font-weight: 500;
+      color: var(--text-primary);
+    }
+
+    .pin-card p {
+      font-size: 12px;
+      color: var(--text-secondary);
+      margin-top: 3px;
+    }
+
+    .close-card {
+      text-decoration: none;
+      color: var(--text-secondary);
+      font-size: 18px;
+      line-height: 1;
+      padding: 2px 6px;
+    }
+
+    .pin-card-actions {
+      display: flex;
+      gap: 8px;
+      margin-top: 10px;
+    }
+
+    .card-btn {
+      font-size: 12px;
+      font-weight: 500;
+      text-decoration: none;
+      padding: 6px 12px;
+      border-radius: 9999px;
+      border: 1px solid #dadce0;
+      color: var(--text-primary);
+      background: #ffffff;
+    }
+
+    .card-btn.go {
+      background: var(--accent-blue);
+      color: #ffffff;
+      border-color: var(--accent-blue);
+    }
+  </style>
 </head>
-
 <body>
+  <main class="full-map" id="full-map" aria-label="Full screen map canvas">
+    <!-- Base Street Grid -->
+    <div class="street-grid"></div>
 
-    <!-- Navbar -->
-    <nav class="navbar">
-        <div class="logo">
-            <span>📍</span>
-            <h2>Google Maps</h2>
-        </div>
+    <!-- Parks & Water -->
+    <div class="park-zone" style="top: 15%; left: 11%; width: 220px; height: 170px;"></div>
+    <div class="park-zone" style="top: 62%; left: 68%; width: 260px; height: 190px;"></div>
+    <div class="park-zone" style="top: 22%; left: 78%; width: 150px; height: 120px;"></div>
+    <div class="lake-zone" style="top: 18%; left: 53%; width: 195px; height: 125px;"></div>
 
-        <div class="search">
-            <input type="text" placeholder="Search places and addresses">
-            <button>🔍</button>
-        </div>
+    <!-- Major Arterials & Highways -->
+    <div class="road arterial" style="top: 46%; left: -5%; width: 110%; transform: rotate(4deg);"></div>
+    <div class="road arterial" style="top: 12%; left: 32%; width: 95%; transform: rotate(36deg);"></div>
+    <div class="road highway" style="top: 68%; left: -5%; width: 110%; transform: rotate(-12deg);"></div>
+    <div class="road highway" style="top: 8%; left: 66%; width: 90%; transform: rotate(58deg);"></div>
 
-        <div class="nav-icons">
-            <span>⚙️</span>
-            <span>🔔</span>
-            <img src="https://i.pravatar.cc/40" alt="Profile">
-        </div>
-    </nav>
+    <!-- Live Traffic Lines -->
+    <div class="traffic-line amber" style="top: 46.2%; left: 26%; width: 24%; transform: rotate(4deg);"></div>
+    <div class="traffic-line red" style="top: 46.2%; left: 50%; width: 14%; transform: rotate(4deg);"></div>
+    <div class="traffic-line amber" style="top: 68.4%; left: 38%; width: 22%; transform: rotate(-12deg);"></div>
 
-    <!-- Main Section -->
-    <div class="main">
+    <!-- Area, Park, Water & Road Labels -->
+    <span class="map-text label-park" style="top: 22%; left: 16%;">Cubbon Park</span>
+    <span class="map-text label-park" style="top: 70%; left: 75%;">Lalbagh Botanical Garden</span>
+    <span class="map-text label-water" style="top: 23%; left: 58%;">Ulsoor Lake</span>
+    <span class="map-text label-area" style="top: 34%; left: 45%;">SHANTHALA NAGAR</span>
+    <span class="map-text label-area" style="top: 57%; left: 22%;">RICHMOND TOWN</span>
+    <span class="map-text label-street" style="top: 43.5%; left: 55%;">MG Road</span>
+    <span class="map-text label-street" style="top: 34%; left: 36%;">Brigade Road</span>
+    <span class="map-text label-street" style="top: 64%; left: 44%;">Outer Ring Corridor</span>
 
-        <!-- Left Panel -->
-        <aside class="left-panel">
+    <!-- User Location -->
+    <div class="user-puck" title="Current Location"></div>
 
-            <h2>Explore nearby</h2>
+    <!-- Clickable Map Pins -->
+    <a href="#info-1" class="map-pin" style="top: 37%; left: 39%;">
+      <span class="pin-pill">★ 4.7 · Coffee</span>
+      <span class="pin-stem"></span>
+      <span class="pin-point"></span>
+    </a>
 
-            <div class="categories">
-                <button>☕ Coffee</button>
-                <button>🍽️ Restaurants</button>
-                <button>🏨 Hotels</button>
-                <button>🛍️ Shopping</button>
-            </div>
+    <a href="#info-2" class="map-pin" style="top: 46%; left: 63%;">
+      <span class="pin-pill">★ 4.6 · Bistro</span>
+      <span class="pin-stem"></span>
+      <span class="pin-point"></span>
+    </a>
 
-            <div class="place">
-                <img src="https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=300" alt="Restaurant">
-                <div>
-                    <h3>Popular Restaurant</h3>
-                    <p>★★★★☆ 4.5</p>
-                    <p>Restaurant · Open now</p>
-                </div>
-            </div>
+    <a href="#info-3" class="map-pin" style="top: 24%; left: 21%;">
+      <span class="pin-pill">★ 4.8 · Park</span>
+      <span class="pin-stem"></span>
+      <span class="pin-point"></span>
+    </a>
 
-            <div class="place">
-                <img src="https://images.unsplash.com/photo-1501339847302-ac426a4a7cbb?w=300" alt="Cafe">
-                <div>
-                    <h3>City Coffee Cafe</h3>
-                    <p>★★★★★ 4.8</p>
-                    <p>Cafe · Open now</p>
-                </div>
-            </div>
-
-            <div class="place">
-                <img src="https://images.unsplash.com/photo-1566073771259-6a8506099945?w=300" alt="Hotel">
-                <div>
-                    <h3>Grand Hotel</h3>
-                    <p>★★★★☆ 4.2</p>
-                    <p>Hotel · Open now</p>
-                </div>
-            </div>
-
-        </aside>
-
-        <!-- Map Area -->
-        <section class="map">
-
-            <div class="road road1"></div>
-            <div class="road road2"></div>
-            <div class="road road3"></div>
-
-            <div class="map-name">BENGALURU</div>
-
-            <div class="marker marker1">📍</div>
-            <div class="marker marker2">📍</div>
-            <div class="marker marker3">📍</div>
-
-            <div class="map-buttons">
-                <button>+</button>
-                <button>−</button>
-                <button>📍</button>
-            </div>
-
-        </section>
-
+    <!-- Floating Search Pill -->
+    <div class="floating-search">
+      <svg viewBox="0 0 24 24" fill="currentColor">
+        <path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/>
+      </svg>
+      <input type="search" placeholder="Search here" aria-label="Search here">
+      <a href="#info-1" title="Directions" aria-label="Directions">
+        <svg viewBox="0 0 24 24" width="17" height="17" fill="currentColor">
+          <path d="M21.71 11.29l-9-9a.996.996 0 0 0-1.41 0l-9 9a.996.996 0 0 0 0 1.41l9 9c.39.39 1.02.39 1.41 0l9-9a.996.996 0 0 0 0-1.41zM14 14.5V12h-4v3H8v-4c0-.55.45-1 1-1h5V7.5l3.5 3.5-3.5 3.5z"/>
+        </svg>
+      </a>
     </div>
 
+    <!-- Bottom-Right Zoom & Scale -->
+    <div class="bottom-right-stack">
+      <div class="zoom-cluster">
+        <a href="#full-map" class="zoom-btn" title="Zoom in">+</a>
+        <a href="#full-map" class="zoom-btn" title="Zoom out">&minus;</a>
+      </div>
+      <div class="scale-badge">500 m</div>
+    </div>
+
+    <!-- Compact Place Popups -->
+    <div id="info-1" class="pin-card">
+      <div class="pin-card-top">
+        <div>
+          <h2>Brigade Corner Café</h2>
+          <p>★ 4.7 (1,180) · Specialty Coffee · Open</p>
+        </div>
+        <a href="#full-map" class="close-card" aria-label="Close">&times;</a>
+      </div>
+      <div class="pin-card-actions">
+        <a href="#full-map" class="card-btn go">Directions</a>
+        <a href="#full-map" class="card-btn">Save</a>
+      </div>
+    </div>
+
+    <div id="info-2" class="pin-card">
+      <div class="pin-card-top">
+        <div>
+          <h2>MG Terrace Kitchen</h2>
+          <p>★ 4.6 (740) · Restaurant · Open</p>
+        </div>
+        <a href="#full-map" class="close-card" aria-label="Close">&times;</a>
+      </div>
+      <div class="pin-card-actions">
+        <a href="#full-map" class="card-btn go">Directions</a>
+        <a href="#full-map" class="card-btn">Save</a>
+      </div>
+    </div>
+
+    <div id="info-3" class="pin-card">
+      <div class="pin-card-top">
+        <div>
+          <h2>Cubbon Central Lawn</h2>
+          <p>★ 4.8 (15,200) · Public Park · Open</p>
+        </div>
+        <a href="#full-map" class="close-card" aria-label="Close">&times;</a>
+      </div>
+      <div class="pin-card-actions">
+        <a href="#full-map" class="card-btn go">Directions</a>
+        <a href="#full-map" class="card-btn">Save</a>
+      </div>
+    </div>
+  </main>
 </body>
 </html>
